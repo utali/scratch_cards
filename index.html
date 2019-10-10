@@ -61,23 +61,46 @@
     ctx.fillRect(0,0,w,h);
 
     //鼠标按下事件
-    let count = 0;
-    canvas.onmousedown = function (e) {
-        if (count < 10) {
-            ctx.beginPath();
-            ctx.globalCompositeOperation = 'destination-out'; //显示重合部分的原内容
-            let x = e.offsetX;
-            let y = e.offsetY;
-            ctx.arc(x, y, 20, 0, 2*Math.PI);
-            ctx.fillStyle = 'white';
-            ctx.fill();
-            count++;
-        } else {
-            //点击次数超过10次清楚蒙层
-            ctx.clearRect(0,0, w, h);
+    let clearReactTag = false;
+    let pathArr = [];
+    canvas.addEventListener('mousedown', function (e) {
+        if (pathArr.length <= 250) {
+            clearCanvas(e);
+            clearReactTag = true;
+            savePath(e)
         }
+    });
+    canvas.addEventListener('mousemove', function (e) {
+        if (clearReactTag) {
+            clearCanvas(e);
+            savePath(e);
+            if (pathArr.length >= 250) {
+                //点数大于250个点时显示全部
+                ctx.clearRect(0,0,w,h);
+                clearReactTag = false;
+            }
+        }
+    });
+    canvas.addEventListener('mouseup', function (e) {
+        clearReactTag = false;
+    });
+    canvas.addEventListener('mouseout', function (e) {
+        clearReactTag = false;
+    });
+    //清除部分覆盖内容
+    clearCanvas = function (e) {
+        ctx.beginPath();
+        ctx.globalCompositeOperation = 'destination-out'; //显示重合部分的原内容
+        let x = e.x;
+        let y = e.y;
+        ctx.arc(x, y, 20, 0, 2*Math.PI);
+        ctx.fillStyle = 'white';
+        ctx.fill();
+    };
+    //保存移动路径
+    savePath = function (e) {
+        pathArr.push({ x: e.x, y: e.y });
     }
-
 
 </script>
 </body>
